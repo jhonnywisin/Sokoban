@@ -1,10 +1,12 @@
 package juego;
 
+import javax.swing.JPanel;
+
 public class Main {
 
 	public static void main(String[] args) {
 		
-		Ventana v = new Ventana();
-		v.setVisible(true);
+		Levels l = new Levels();
+		l.setVisible(true);
 	}
 }

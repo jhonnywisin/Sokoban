@@ -3,8 +3,12 @@ package juego;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.panamahitek.ArduinoException;
@@ -30,6 +34,7 @@ public class Marco extends JPanel{
     private final int RIGHT_COLLISION = 2;
     private final int TOP_COLLISION = 3;
     private final int BOTTOM_COLLISION = 4;
+	private JButton next;
 	
 	private ArrayList<Pared>paredes;
 	private ArrayList<Caja>cajas;
@@ -42,19 +47,10 @@ public class Marco extends JPanel{
 	
     private boolean isCompleted = false;
 	
-	private String nivel
-     		= "###################\n"
-     		+ "#.   $         *  #\n"
-     		+ "#### ##############\n"
-     		+ "#  $             .#\n"
-     		+ "# #   ### #########\n"
-     		+ "# # ##### #########\n"
-     		+ "# #.##### #########\n"
-     		+ "# ## $ $         .#\n"
-     		+ "# @       #########\n"
-     		+ "###################\n";
+	private String nivel = "";
+    private String level;
      		
-	//-----------------------VARIABLES PARA LOS CONTROLES----------------------------------------------
+	//-----------------------VARIABLES PARA LOS CONTROLES---------------------------
 	private String comparar[] = {"X:0", "X:1023", "Y:0", "Y:1023"};
 	private String comparar2[] = {"X2:0", "X2:1023", "Y2:0", "Y2:1023"};
 	
@@ -66,10 +62,11 @@ public class Marco extends JPanel{
     PanamaHitek_MultiMessage men;
     
     private String ejeX, ejeY, ejeX2, ejeY2;
-	//-------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------
 
-	//-----------------METODO CONSTRUCTOR DE LA CLASE---------------------------------------------------
-	public Marco() {
+	//-----------------METODO CONSTRUCTOR DE LA CLASE-------------------------------
+	public Marco(String level) {
+		this.level = level;
 		
 		iniciaMundo();
 		ar = new PanamaHitek_Arduino();
@@ -82,9 +79,12 @@ public class Marco extends JPanel{
 			e.printStackTrace();
 		}
 	}
-	//--------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------
 	
+	//----------------------METODO PARA INICIAR LOS NIVELES-------------------------
 	private void iniciaMundo() {
+		
+		nivel = lee_nivel();
 		
 		paredes = new ArrayList<>();
 		cajas   = new ArrayList<>();
@@ -151,6 +151,7 @@ public class Marco extends JPanel{
 			h = y;
 		}
 	}
+	//------------------------------------------------------------------------------
 	
     @Override
     public void paintComponent(Graphics g) {
@@ -159,6 +160,7 @@ public class Marco extends JPanel{
         construyeMundo(g);    
     }
     
+    //-------------------METODO PARA CONSTRUIR LOS GRAFICOS DEL NIVELES----------------
     private void construyeMundo(Graphics g) {
 	
     	 g.setColor(new Color(250, 240, 170));
@@ -184,10 +186,24 @@ public class Marco extends JPanel{
              if(isCompleted) {
             	 g.setColor(Color.RED);
             	 g.setFont(new Font("Serif", Font.BOLD, 40));
-                 g.drawString("Completado", 510, 32); 
+                 g.drawString("Completado", 410, 32); 
+                 
+                 g.setColor(Color.BLACK);
+            	 g.setFont(new Font("Serif", Font.BOLD, 40));
+                 g.drawString("Completado", 412, 34); 
+                 
+                 g.setColor(Color.RED);
+            	 g.setFont(new Font("Serif", Font.BOLD, 30));
+                 g.drawString("NEXT", 710, 32); 
+                 
+                 g.setColor(Color.BLACK);
+            	 g.setFont(new Font("Serif", Font.BOLD, 30));
+                 g.drawString("NEXT", 712, 34); 
+                 
              }
          }
     }
+    //----------------------------------------------------------------------------------
     
     public int getMarcoWidth() {
     	return this.w;
@@ -198,6 +214,7 @@ public class Marco extends JPanel{
     	return this.h;
     }
     
+    //--------------------METODO PARA VER SI EXISTE COLISION CON LOS MUEROS-----------------------
     private boolean checkParedCollision(Actor actor, int tipo) {
 
     	
@@ -244,7 +261,9 @@ public class Marco extends JPanel{
     	
     	return false;
     }
+    //---------------------------------------------------------------------------------------------
     
+    //----------------------METODO PARA VER SI EXISTE COLISION CON CAJAS Y PUNTOS------------------
     private boolean checkobjectCollision(int tipo, Player ju) {
     	switch (tipo) {
     	
@@ -362,7 +381,9 @@ public class Marco extends JPanel{
 		}
 		return false;
     }
+    //---------------------------------------------------------------------------------------------
     
+    //----------------METODO PARA VER SI EL NIVEL ESTA COMPLETO------------------------------------
     public void isComplete() {
     	
     	int objetos  = cajas.size();
@@ -387,6 +408,48 @@ public class Marco extends JPanel{
     		isCompleted = true;
     	}
     }
+    //---------------------------------------------------------------------------------------------
+    
+    //---------------METODO PARA CARGAR LOS NIVELES-------------------------------
+    private String lee_nivel() {
+		
+    	String nivel = null;
+    	
+    	File archivo      = null;
+		FileReader fr     = null;
+		BufferedReader br = null;
+		String linea      = null;
+		
+		
+		archivo = new File("src/niveles/" + level +".txt");
+		try {
+			
+			fr = new FileReader(archivo);
+			br = new BufferedReader(fr);
+
+	      while((linea = br.readLine()) != null)
+	    	  	nivel += linea + "\n";
+				
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			
+			try {
+				if(null != fr) {
+					fr.close();
+				}
+			}catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+	
+		return nivel;
+    }
+    //----------------------------------------------------------------------------
+    
+    //---------------------------METODO PARA EL MANEJO CON LOS MANDOS------------------------------
+    //--------------------------------------------------------------------------
     
     //-------------------------trabajando con arduino---------------------------
     SerialPortEventListener listener = new SerialPortEventListener() {
@@ -466,6 +529,6 @@ public class Marco extends JPanel{
 				}
 		}
     };
-    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
     
 }

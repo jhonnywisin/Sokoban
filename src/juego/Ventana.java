@@ -1,5 +1,6 @@
 package juego;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 
 public class Ventana extends JFrame{
@@ -8,9 +9,11 @@ public class Ventana extends JFrame{
 
 	private final int OFFSET = 30;
 
-	Marco m = new Marco();
+	Marco m;
 	
-	public Ventana() {
+	public Ventana(String level) {
+		
+		m = new Marco(level);
 		
 		add(m);
 		
