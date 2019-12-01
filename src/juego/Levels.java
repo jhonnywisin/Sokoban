@@ -64,15 +64,19 @@ public class Levels extends JFrame implements MouseListener{
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		
 		if(e.getSource().equals(btns[0][0])) {
-			Ventana v = new Ventana("nivel1");
+			Ventana v = new Ventana(1);
 			v.setVisible(true);
+			dispose();
 		}else if(e.getSource().equals(btns[0][2])) {
-			Ventana v = new Ventana("nivel3");
+			Ventana v = new Ventana(3);
 			v.setVisible(true);
+			dispose();
 		}else if(e.getSource().equals(btns[0][1])) {
-			Ventana v = new Ventana("nivel2");
+			Ventana v = new Ventana(2);
 			v.setVisible(true);
+			dispose();
 		}
 	}
 

@@ -3,13 +3,19 @@ package juego;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import com.panamahitek.ArduinoException;
 import com.panamahitek.PanamaHitek_Arduino;
@@ -24,7 +30,7 @@ import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import clases.Caja;
 
-public class Marco extends JPanel{
+public class Marco extends JPanel implements ActionListener{
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -34,11 +40,15 @@ public class Marco extends JPanel{
     private final int RIGHT_COLLISION = 2;
     private final int TOP_COLLISION = 3;
     private final int BOTTOM_COLLISION = 4;
-	private JButton next;
+	private JButton next  = new JButton("NEXT");
+	private JButton levels  = new JButton("LEVELS");
+	private JButton retry = new JButton("RETRY");
+	private JButton exit = new JButton("EXIT");
 	
 	private ArrayList<Pared>paredes;
 	private ArrayList<Caja>cajas;
 	private ArrayList<Punto> puntos;
+	private ArrayList<Actor> mundo;
 	
 	private int w = 0;
 	private int h = 0;
@@ -48,7 +58,8 @@ public class Marco extends JPanel{
     private boolean isCompleted = false;
 	
 	private String nivel = "";
-    private String level;
+	private File archivo;
+    private int id;
      		
 	//-----------------------VARIABLES PARA LOS CONTROLES---------------------------
 	private String comparar[] = {"X:0", "X:1023", "Y:0", "Y:1023"};
@@ -63,19 +74,31 @@ public class Marco extends JPanel{
     
     private String ejeX, ejeY, ejeX2, ejeY2;
 	//------------------------------------------------------------------------------
-
+    
 	//-----------------METODO CONSTRUCTOR DE LA CLASE-------------------------------
-	public Marco(String level) {
-		this.level = level;
+	public Marco(int id) {
+		this.id = id;
 		
 		iniciaMundo();
 		ar = new PanamaHitek_Arduino();
 	    men = new PanamaHitek_MultiMessage(mensajes, ar); 
 	    
+	    next.setEnabled(false);
+	    next.addActionListener(this);
+	    retry.addActionListener(this);
+	    levels.addActionListener(this);
+	    exit.addActionListener(this);
+	    
+	    mundo = new ArrayList<>();
+	    
+	    add(next);
+	    add(levels);
+	    add(retry);
+	    add(exit);
+	    
 	    try {
 			ar.arduinoRX(PUERTO, BITS_S, listener);
 		} catch (ArduinoException | SerialPortException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -157,51 +180,46 @@ public class Marco extends JPanel{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        construyeMundo(g);    
+        construyeMundo(g,1);    
     }
     
     //-------------------METODO PARA CONSTRUIR LOS GRAFICOS DEL NIVELES----------------
-    private void construyeMundo(Graphics g) {
-	
-    	 g.setColor(new Color(250, 240, 170));
-         g.fillRect(0, 0, this.getWidth(), this.getHeight());
+    private void construyeMundo(Graphics g, int tipo) {
+    	
+    	if(tipo == 1) {
+    		 g.setColor(new Color(250, 240, 170));
+             g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
-         ArrayList<Actor> mundo = new ArrayList<>();
+             mundo.addAll(paredes);
+             mundo.addAll(puntos);
+             mundo.addAll(cajas);
+             mundo.add(jugador);
+             mundo.add(jugador2);
+            
+             for (int i = 0; i < mundo.size(); i++) {
 
-         mundo.addAll(paredes);
-         mundo.addAll(puntos);
-         mundo.addAll(cajas);
-         mundo.add(jugador);
-         mundo.add(jugador2);
-        
-         for (int i = 0; i < mundo.size(); i++) {
-
-             Actor item = mundo.get(i);
-             
-             if(item instanceof Player || item instanceof Caja)
-            	 g.drawImage(item.getImage(), item.x() + 2, item.y() + 2, this);
-             else
-            	 g.drawImage(item.getImage(), item.x(), item.y(),this);
-             
-             if(isCompleted) {
-            	 g.setColor(Color.RED);
-            	 g.setFont(new Font("Serif", Font.BOLD, 40));
-                 g.drawString("Completado", 410, 32); 
+                 Actor item = mundo.get(i);
                  
-                 g.setColor(Color.BLACK);
-            	 g.setFont(new Font("Serif", Font.BOLD, 40));
-                 g.drawString("Completado", 412, 34); 
+                 if(item instanceof Player || item instanceof Caja)
+                	 g.drawImage(item.getImage(), item.x() + 2, item.y() + 2, this);
+                 else
+                	 g.drawImage(item.getImage(), item.x(), item.y(),this);
                  
-                 g.setColor(Color.RED);
-            	 g.setFont(new Font("Serif", Font.BOLD, 30));
-                 g.drawString("NEXT", 710, 32); 
-                 
-                 g.setColor(Color.BLACK);
-            	 g.setFont(new Font("Serif", Font.BOLD, 30));
-                 g.drawString("NEXT", 712, 34); 
-                 
+                 if(isCompleted) {
+                	 g.setColor(Color.RED);
+                	 g.setFont(new Font("Serif", Font.BOLD, 40));
+                     g.drawString("Completado", 210, 32); 
+                     
+                     g.setColor(Color.BLACK);
+                	 g.setFont(new Font("Serif", Font.BOLD, 40));
+                     g.drawString("Completado", 212, 34); 
+                     
+                     next.setEnabled(true);
+                 }
              }
-         }
+    	}else {
+    		g.dispose();
+    	}
     }
     //----------------------------------------------------------------------------------
     
@@ -412,16 +430,14 @@ public class Marco extends JPanel{
     
     //---------------METODO PARA CARGAR LOS NIVELES-------------------------------
     private String lee_nivel() {
-		
-    	String nivel = null;
     	
     	File archivo      = null;
 		FileReader fr     = null;
 		BufferedReader br = null;
 		String linea      = null;
+
+		archivo = new File("src/niveles/nivel" + id + ".txt");
 		
-		
-		archivo = new File("src/niveles/" + level +".txt");
 		try {
 			
 			fr = new FileReader(archivo);
@@ -531,4 +547,46 @@ public class Marco extends JPanel{
     };
     //---------------------------------------------------------------------------------------------
     
+    
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		
+		Window w = SwingUtilities.getWindowAncestor(Marco.this);
+		
+		if(e.getSource() == levels) {
+			try {
+				ar.killArduinoConnection();
+			} catch (ArduinoException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Levels l = new Levels();
+			l.setVisible(true);
+			w.setVisible(false);
+		}else if(e.getSource() == exit) {
+			System.exit(0);
+		}else if(e.getSource() == next) {
+			try {
+				ar.killArduinoConnection();
+			} catch (ArduinoException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Ventana v = new Ventana(id + 1);
+			v.setVisible(true);
+			w.setVisible(false);
+			
+		}else if(e.getSource() == retry) {
+			try {
+				ar.killArduinoConnection();
+			} catch (ArduinoException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Ventana v = new Ventana(id);
+			v.setVisible(true);
+			w.setVisible(false);
+		}
+	}
 }

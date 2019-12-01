@@ -11,9 +11,9 @@ public class Ventana extends JFrame{
 
 	Marco m;
 	
-	public Ventana(String level) {
+	public Ventana(int id) {
 		
-		m = new Marco(level);
+		m = new Marco(id);
 		
 		add(m);
 		
@@ -23,5 +23,8 @@ public class Ventana extends JFrame{
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
+		setUndecorated(true);
 	} 
+	
+	public Ventana() {}
 }
