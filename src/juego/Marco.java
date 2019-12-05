@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -24,6 +25,7 @@ import com.panamahitek.PanamaHitek_MultiMessage;
 import clases.Actor;
 import clases.Pared;
 import clases.Player;
+import clases.Puerta;
 import clases.Punto;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -49,16 +51,16 @@ public class Marco extends JPanel implements ActionListener{
 	private ArrayList<Caja>cajas;
 	private ArrayList<Punto> puntos;
 	private ArrayList<Actor> mundo;
+	private ArrayList<Puerta>puertas;
 	
 	private int w = 0;
 	private int h = 0;
-	private Player jugador;
+	private Player jugador1;
 	private Player jugador2;
 	
     private boolean isCompleted = false;
-	
+ 	
 	private String nivel = "";
-	private File archivo;
     private int id;
      		
 	//-----------------------VARIABLES PARA LOS CONTROLES---------------------------
@@ -112,13 +114,15 @@ public class Marco extends JPanel implements ActionListener{
 		paredes = new ArrayList<>();
 		cajas   = new ArrayList<>();
 		puntos  = new ArrayList<>();
+		puertas = new ArrayList<>();
 		
 		int x = OFFSET;
 		int y = OFFSET;
 		
-		Pared pared;
-		Caja  caja;
-		Punto punto;
+		Pared  pared;
+		Caja   caja;
+		Punto  punto;
+		Puerta puerta;
 		
 		for (int i = 0; i < nivel.length(); i++) {
 			
@@ -143,7 +147,7 @@ public class Marco extends JPanel implements ActionListener{
 					break;
 				
 				case '@':
-					jugador = new Player(x, y);
+					jugador1 = new Player(x, y);
 					x += SPACE;
 					break;
 					
@@ -156,6 +160,12 @@ public class Marco extends JPanel implements ActionListener{
 				case '.':
 					punto = new Punto(x, y);
 					puntos.add(punto);
+					x += SPACE;
+					break;
+				
+				case '+':
+					puerta = new Puerta(x, y);
+					puertas.add(puerta);
 					x += SPACE;
 					break;
 					
@@ -186,14 +196,14 @@ public class Marco extends JPanel implements ActionListener{
     //-------------------METODO PARA CONSTRUIR LOS GRAFICOS DEL NIVELES----------------
     private void construyeMundo(Graphics g, int tipo) {
     	
-    	if(tipo == 1) {
     		 g.setColor(new Color(250, 240, 170));
              g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
              mundo.addAll(paredes);
              mundo.addAll(puntos);
              mundo.addAll(cajas);
-             mundo.add(jugador);
+             mundo.addAll(puertas);
+             mundo.add(jugador1);
              mundo.add(jugador2);
             
              for (int i = 0; i < mundo.size(); i++) {
@@ -217,9 +227,6 @@ public class Marco extends JPanel implements ActionListener{
                      next.setEnabled(true);
                  }
              }
-    	}else {
-    		g.dispose();
-    	}
     }
     //----------------------------------------------------------------------------------
     
@@ -232,7 +239,7 @@ public class Marco extends JPanel implements ActionListener{
     	return this.h;
     }
     
-    //--------------------METODO PARA VER SI EXISTE COLISION CON LOS MUEROS-----------------------
+    //--------------------METODO PARA VER SI EXISTE COLISION CON LOS MUROS-----------------------
     private boolean checkParedCollision(Actor actor, int tipo) {
 
     	
@@ -279,6 +286,92 @@ public class Marco extends JPanel implements ActionListener{
     	
     	return false;
     }
+    //---------------------------------------------------------------------------------------------
+    
+    //-----------------------METODO PARA LA COLISION CON LA PUERTA---------------------------------
+    private boolean checkPuertaCollision(Player player, int tipo) {
+    	
+    	switch (tipo) {
+    	
+		case LEFT_COLLISION:
+			for (int i = 0; i < puertas.size(); i++) {
+				Puerta puerta = puertas.get(i);
+				if (player.isLeftCollision(puerta)) {
+					for (int j = 0; j < puertas.size(); j++) {
+						Puerta puert = puertas.get(j);
+						if(!puerta.equals(puert)) {
+							player.move(puert.x(), puert.y());
+							player.setX(puert.x());
+							player.setY(puert.y());
+						}
+					}
+					return true;
+				}
+		}
+		
+			return false;
+		
+		case RIGHT_COLLISION:
+			for (int i = 0; i < puertas.size(); i++) {
+				Puerta puerta = puertas.get(i);
+				if(player.isRightCollision(puerta)) {
+					for (int j = 0; j < puertas.size(); j++) {
+						Puerta puert = puertas.get(j);
+						if(!puerta.equals(puert)) {
+							player.move(puert.x(), puert.y());
+							player.setX(puert.x());
+							player.setY(puert.y());
+						}
+					}
+					return true;
+				}
+			}
+			
+			return false;
+			
+		case TOP_COLLISION:
+			for (int i = 0; i < puertas.size(); i++) {
+				Puerta puerta = puertas.get(i);
+				if (player.isTopCollision(puerta)) {
+					for (int j = 0; j < puertas.size(); j++) {
+						Puerta puert = puertas.get(j);
+						if(!puerta.equals(puert)) {
+							player.move(puert.x(), puert.y());
+							player.setX(puert.x());
+							player.setY(puert.y());
+						}
+					}
+					return true;
+				}
+		}
+		
+			return false;
+		
+		case BOTTOM_COLLISION:
+			for (int i = 0; i < puertas.size(); i++) {
+				Puerta puerta = puertas.get(i);
+				if(player.isBottomCollision(puerta)) {
+					for (int j = 0; j < puertas.size(); j++) {
+						Puerta puert = puertas.get(j);
+						if(!puerta.equals(puert)) {
+							player.move(puert.x(), puert.y());
+							player.setX(puert.x());
+							player.setY(puert.y());
+						}
+					}
+					return true;
+				}
+			}
+			
+			return false;
+
+	default:
+		break;
+	}
+	
+		return false;		
+    }
+			
     //---------------------------------------------------------------------------------------------
     
     //----------------------METODO PARA VER SI EXISTE COLISION CON CAJAS Y PUNTOS------------------
@@ -401,6 +494,8 @@ public class Marco extends JPanel implements ActionListener{
     }
     //---------------------------------------------------------------------------------------------
     
+  
+    
     //----------------METODO PARA VER SI EL NIVEL ESTA COMPLETO------------------------------------
     public void isComplete() {
     	
@@ -464,9 +559,6 @@ public class Marco extends JPanel implements ActionListener{
     }
     //----------------------------------------------------------------------------
     
-    //---------------------------METODO PARA EL MANEJO CON LOS MANDOS------------------------------
-    //--------------------------------------------------------------------------
-    
     //-------------------------trabajando con arduino---------------------------
     SerialPortEventListener listener = new SerialPortEventListener() {
 
@@ -482,28 +574,48 @@ public class Marco extends JPanel implements ActionListener{
 
 					     //--------------CONTROL 1 ---------------------------------
 					     if(ejeX.equals(comparar[0])) {
-					    	 if(!checkParedCollision(jugador, LEFT_COLLISION)) {
-					    		 if(!checkobjectCollision(LEFT_COLLISION, jugador))
-					    			 jugador.move(-SPACE, 0);
+					    	 if(!checkParedCollision(jugador1, LEFT_COLLISION)) {
+					    		 if(!checkobjectCollision(LEFT_COLLISION, jugador1)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador1, LEFT_COLLISION))
+					    					 jugador1.move(-SPACE, 0);
+					    			 }else
+					    				 jugador1.move(-SPACE, 0);
+					    		 }				    			 
 					    	 }
 					    		 
 					    	 
 					     }else if(ejeX.equals(comparar[1])) {
-					    	 if(!checkParedCollision(jugador, RIGHT_COLLISION)) {
-					    		 if(!checkobjectCollision(RIGHT_COLLISION, jugador))
-					    		 	jugador.move(SPACE, 0);
+					    	 if(!checkParedCollision(jugador1, RIGHT_COLLISION)) {
+					    		 if(!checkobjectCollision(RIGHT_COLLISION, jugador1)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador1, RIGHT_COLLISION))
+					    					 jugador1.move(SPACE, 0);
+					    			 }else
+					    				 jugador1.move(SPACE, 0);
+					    		 }
 					    	 }	 
 					    	 
 					     }else if(ejeY.equals(comparar[2])) {
-					    	 if(!checkParedCollision(jugador, TOP_COLLISION)) {
-					    		 if(!checkobjectCollision(TOP_COLLISION, jugador))
-					    		 	jugador.move(0, -SPACE);
+					    	 if(!checkParedCollision(jugador1, TOP_COLLISION)) {
+					    		 if(!checkobjectCollision(TOP_COLLISION, jugador1)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador1, TOP_COLLISION))
+					    					 jugador1.move(0, -SPACE);
+					    			 }else
+					    				 jugador1.move(0, -SPACE);
+					    		 }
 					    	 }
 					    	 
 					     }else if(ejeY.equals(comparar[3])) {
-					    	 if(!checkParedCollision(jugador, BOTTOM_COLLISION)) {
-					    		 if(!checkobjectCollision(BOTTOM_COLLISION, jugador))
-					    		 	jugador.move(0, SPACE);
+					    	 if(!checkParedCollision(jugador1, BOTTOM_COLLISION)) {
+					    		 if(!checkobjectCollision(BOTTOM_COLLISION, jugador1)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador1, BOTTOM_COLLISION))
+					    					 jugador1.move(0, SPACE);
+					    			 }else
+					    				 jugador1.move(0, SPACE);
+					    		 }	
 					    	 }	 
 					     }//-----------------------------------------------------------
 					     
@@ -511,27 +623,47 @@ public class Marco extends JPanel implements ActionListener{
 					     //---------------------CONTROL 2-----------------------------
 					     if(ejeX2.equals(comparar2[0])) {
 					    	 if(!checkParedCollision(jugador2, LEFT_COLLISION)) {
-					    		 if(!checkobjectCollision(LEFT_COLLISION, jugador2))
-					    			 jugador2.move(-SPACE, 0);
+					    		 if(!checkobjectCollision(LEFT_COLLISION, jugador2)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador2,LEFT_COLLISION))
+					    					 jugador2.move(-SPACE, 0);
+					    			 }else
+					    				 jugador2.move(-SPACE, 0);
+					    		 }
 					    	 }
 					    		 
 					    	 
 					     }else if(ejeX2.equals(comparar2[1])) {
 					    	 if(!checkParedCollision(jugador2, RIGHT_COLLISION)) {
-					    		 if(!checkobjectCollision(RIGHT_COLLISION, jugador2))
-					    			 jugador2.move(SPACE, 0);
+					    		 if(!checkobjectCollision(RIGHT_COLLISION, jugador2)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador2,RIGHT_COLLISION))
+					    					 jugador2.move(SPACE, 0);
+					    			 }else
+					    				 jugador2.move(SPACE, 0);
+					    		 }	 
 					    	 }
 					    	 
 					     }else if(ejeY2.equals(comparar2[2])) {
 					    	 if(!checkParedCollision(jugador2, TOP_COLLISION)) {
-					    		 if(!checkobjectCollision(TOP_COLLISION, jugador2))
-					    		 	jugador2.move(0, -SPACE);
+					    		 if(!checkobjectCollision(TOP_COLLISION, jugador2)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador2, TOP_COLLISION))
+					    					 jugador2.move(0, -SPACE);
+					    			 }else
+					    				 jugador2.move(0, -SPACE);
+					    		 }	
 					    	 }
 					    	 
 					     }else if(ejeY2.equals(comparar2[3])) {
 					    	 if(!checkParedCollision(jugador2, BOTTOM_COLLISION)) {
-					    		 if(!checkobjectCollision(BOTTOM_COLLISION, jugador2))
-					    		 	jugador2.move(0, SPACE);
+					    		 if(!checkobjectCollision(BOTTOM_COLLISION, jugador2)) {
+					    			 if(puertas.size() != 0) {
+					    				 if(!checkPuertaCollision(jugador2, BOTTOM_COLLISION))
+					    					 jugador2.move(0, SPACE);
+					    			 }else
+					    				 jugador2.move(0, SPACE);
+					    		 } 	
 					    	 }	 
 					     }
 					     
@@ -555,15 +687,31 @@ public class Marco extends JPanel implements ActionListener{
 		Window w = SwingUtilities.getWindowAncestor(Marco.this);
 		
 		if(e.getSource() == levels) {
-			try {
-				ar.killArduinoConnection();
-			} catch (ArduinoException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if(isCompleted) {
+				try {
+					ar.killArduinoConnection();
+				} catch (ArduinoException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				Levels l = new Levels();
+				l.setVisible(true);
+				w.setVisible(false);
+			}else {
+				int valor = JOptionPane.showConfirmDialog(this, "¿Estas seguro?","Levels",2);
+				if(valor == 0) {
+					try {
+						ar.killArduinoConnection();
+					} catch (ArduinoException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Levels l = new Levels();
+					l.setVisible(true);
+					w.setVisible(false);
+				}
 			}
-			Levels l = new Levels();
-			l.setVisible(true);
-			w.setVisible(false);
+		
 		}else if(e.getSource() == exit) {
 			System.exit(0);
 		}else if(e.getSource() == next) {
@@ -578,15 +726,33 @@ public class Marco extends JPanel implements ActionListener{
 			w.setVisible(false);
 			
 		}else if(e.getSource() == retry) {
-			try {
-				ar.killArduinoConnection();
-			} catch (ArduinoException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			
+			if(isCompleted) {
+				try {
+					ar.killArduinoConnection();
+				} catch (ArduinoException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				Ventana v = new Ventana(id);
+				v.setVisible(true);
+				w.setVisible(false);
+			}else {
+				int valor = JOptionPane.showConfirmDialog(this, "¿Estas seguro de reiniciar el juego?","Retry",2);
+				if(valor == 0) {
+					try {
+						ar.killArduinoConnection();
+					} catch (ArduinoException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Ventana v = new Ventana(id);
+					v.setVisible(true);
+					w.setVisible(false);
+				}
 			}
-			Ventana v = new Ventana(id);
-			v.setVisible(true);
-			w.setVisible(false);
+			
+		
 		}
 	}
 }

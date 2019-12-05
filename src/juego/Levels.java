@@ -69,12 +69,20 @@ public class Levels extends JFrame implements MouseListener{
 			Ventana v = new Ventana(1);
 			v.setVisible(true);
 			dispose();
+		}else if(e.getSource().equals(btns[0][1])) {
+			Ventana v = new Ventana(2);
+			v.setVisible(true);
+			dispose();
 		}else if(e.getSource().equals(btns[0][2])) {
 			Ventana v = new Ventana(3);
 			v.setVisible(true);
 			dispose();
-		}else if(e.getSource().equals(btns[0][1])) {
-			Ventana v = new Ventana(2);
+		}else if(e.getSource().equals(btns[0][3])) {
+			Ventana v = new Ventana(4);
+			v.setVisible(true);
+			dispose();
+		}else if(e.getSource().equals(btns[1][0])) {
+			Ventana v = new Ventana(5);
 			v.setVisible(true);
 			dispose();
 		}
